@@ -4,7 +4,7 @@ import("stdfaust.lib");
 //Segnale diretto dalla sorgente
 distance = 10; //distanza della sorgente in metri
 directDelay = distance/344;
-sourceInlet = _ : fi.lowpass(2, 20000) : de.delay(ma.SR/10, ba.sec2samp(directDelay)) : fi.tf2s(0,0,1,sqrt(2),1,ma.PI*ma.SR/2);
+sourceInlet = _ : fi.lowpass(2, 20000) : de.delay(ma.SR/10, ba.sec2samp(directDelay)) : directionalizer;
 
 //Primo filtro del riverberatore
 firstFilter = _ : fi.lowpass(2, 18000) : _;
