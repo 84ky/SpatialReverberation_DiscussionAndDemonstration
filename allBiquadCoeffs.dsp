@@ -11,91 +11,95 @@ biQuad(b2, b1, b0, a2, a1) = fir(b2, b1, b0) : ma.sub ~ iir(a2, a1) //il feedbac
         iir(a2, a1) = _ <: a2c(a2), a1c(a1) :> _;
     };
 
+// biQuad and the Faust library filters use a monic denominator (a0 = 1).
+normalizeBiquad(b2, b1, b0, a2, a1, a0) =
+    (b2/a0, b1/a0, b0/a0, a2/a0, a1/a0);
 
 
-lowPassCoeffs(cutFreq, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+
+lowPassCoeffs(cutFreq, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
     alpha = sin(w0) / (2 * qFactor);
     b0 = (1 - cos(w0)) / 2;
     b1 = 1 - cos(w0);
     b2 = (1 - cos(w0)) / 2;
-    //a0 = 1 + alpha;
+    a0 = 1 + alpha;
     a1 = -2 * cos(w0);
     a2 = 1 - alpha;
   };
 
 
 
-highPassCoeffs(cutFreq, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+highPassCoeffs(cutFreq, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
     alpha = sin(w0) / (2 * qFactor);
     b0 = (1 + cos(w0)) / 2;
     b1 = -(1 + cos(w0));
     b2 = (1 + cos(w0)) / 2;
-    //a0 = 1 + alpha;
+    a0 = 1 + alpha;
     a1 = -2 * cos(w0);
     a2 = 1 - alpha;
   };
 
 
-bandPassCoeffsConstSkirtGain(cutFreq, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+bandPassCoeffsConstSkirtGain(cutFreq, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
     alpha = sin(w0) / (2 * qFactor);
     b0 = sin(w0) / 2;
     b1 = 0;
     b2 = -(sin(w0)/2);
-    //a0 = 1 + alpha;
+    a0 = 1 + alpha;
     a1 = -2 * cos(w0);
     a2 = 1 - alpha;
   };
 
 
-bandPassCoeffsConst0db(cutFreq, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+bandPassCoeffsConst0db(cutFreq, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
     alpha = sin(w0) / (2 * qFactor);
     b0 = alpha;
     b1 = 0;
     b2 = -alpha;
-    //a0 = 1 + alpha;
+    a0 = 1 + alpha;
     a1 = -2 * cos(w0);
     a2 = 1 - alpha;
   };
 
 
 
-notchCoeffs(cutFreq, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+notchCoeffs(cutFreq, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
     alpha = sin(w0) / (2 * qFactor);
     b0 = 1;
     b1 = -2*cos(w0);
     b2 = 1;
-    //a0 = 1 + alpha;
+    a0 = 1 + alpha;
     a1 = -2 * cos(w0);
     a2 = 1 - alpha;
   };
 
 
 
-allPassCoeffs(cutFreq, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+allPassCoeffs(cutFreq, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
     alpha = sin(w0) / (2 * qFactor);
     b0 = 1 - alpha;
     b1 = -2*cos(w0);
     b2 = 1 + alpha;
-    //a0 = 1 + alpha;
+    a0 = 1 + alpha;
     a1 = -2 * cos(w0);
     a2 = 1 - alpha;
   };
 
 
 
-peakingEQCoeffs(cutFreq, dbGain, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+peakingEQCoeffs(cutFreq, dbGain, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     amp = 10^(dbGain/40);
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
@@ -103,14 +107,14 @@ peakingEQCoeffs(cutFreq, dbGain, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
     b0 = 1 + (alpha * amp);
     b1 = -2*cos(w0);
     b2 = 1 - (alpha * amp);
-    //a0 = 1 + (alpha/amp);
+    a0 = 1 + (alpha/amp);
     a1 = -2 * cos(w0);
     a2 = 1 - (alpha / amp);
   };
 
 
 
-lowShelfCoeffs(cutFreq, dbGain, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+lowShelfCoeffs(cutFreq, dbGain, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     amp = 10^(dbGain/40);
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
@@ -118,14 +122,14 @@ lowShelfCoeffs(cutFreq, dbGain, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
     b0 = amp*((amp + 1) - (amp - 1)*cos(w0) + 2*sqrt(amp)*alpha);
     b1 = 2*amp*((amp - 1) - (amp + 1)*cos(w0));
     b2 = amp*((amp + 1) - (amp - 1)*cos(w0) - 2*sqrt(amp)*alpha);
-    //a0 = (amp + 1) + (amp - 1)*Cos(w0) + 2*Sqrt(amp)*alpha;
+    a0 = (amp + 1) + (amp - 1)*cos(w0) + 2*sqrt(amp)*alpha;
     a1 = -2*((amp - 1) + (amp + 1)*cos(w0));
     a2 = (amp + 1) + (amp - 1)*cos(w0) - 2*sqrt(amp)*alpha;
   };
 
 
 
-highShelfCoeffs(cutFreq, dbGain, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
+highShelfCoeffs(cutFreq, dbGain, qFactor, sampleRate) = normalizeBiquad(b2, b1, b0, a2, a1, a0)
   with {
     amp = 10^(dbGain/40);
     w0 = 2 * ma.PI * (cutFreq / sampleRate);
@@ -133,7 +137,7 @@ highShelfCoeffs(cutFreq, dbGain, qFactor, sampleRate) = (b2, b1, b0, a2, a1)
     b0 = amp*((amp + 1) + (amp - 1)*cos(w0) + 2*sqrt(amp)*alpha);
     b1 = -2*amp*((amp - 1) + (amp + 1)*cos(w0));
     b2 = amp*((amp + 1) + (amp - 1)*cos(w0) - 2*sqrt(amp)*alpha);
-    //a0 = (amp + 1) - (amp - 1)*cos(w0) + 2*sqrt(amp)*alpha;
+    a0 = (amp + 1) - (amp - 1)*cos(w0) + 2*sqrt(amp)*alpha;
     a1 = 2*((amp - 1) - (amp + 1)*cos(w0));
     a2 = (amp + 1) - (amp - 1)*cos(w0) - 2*sqrt(amp)*alpha;
   };
